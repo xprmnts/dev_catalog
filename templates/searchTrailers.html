@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Trailr</title>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="{{url_for('static',filename='styles.css')}}">
+ 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body>
+		<!--####################### Beginning of the Header Navigation #####################-->
+		<header>
+			<nav>
+				<div class="masthead">
+					<div id="logo"><a href="index.html"><strong>Trailr</strong></a></div>
+					<div id="hamburger">
+						<div class="change bar1"></div>
+						<div class="change bar2"></div>
+					</div>
+				</div>
+				<ul class="navlist">
+					<li><a href="{{url_for('searchTrailers')}}" class="navlist-item">Search</a></li>
+					<li><a href="{{url_for('showLandingPage')}}" class="navlist-item">Discover</a></li>
+					<li><a href="{{url_for('showGenres')}}" class="navlist-item">Genres</a></li>
+					<li><a href="{{url_for('login')}}" class="navlist-item">Login</a></li>
+				</ul>
+			</nav>
+		</header>
+		<!--####################### End of the Header Navigation #####################-->
+		<!--####################### End of the Header Navigation #####################-->
+		<!--####################### Start Render Dynamic Trailer List #####################-->
+		<div class="container">
+			<h1>This Page is Under Construction.</h1>
+
+		</div>
+		<!--####################### End of Dynamic Trailer List #####################-->
+	</body>
+</html>
