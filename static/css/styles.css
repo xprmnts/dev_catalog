@@ -142,6 +142,7 @@ header nav ul li {
     visibility: visible;
 }
 
+
 /*
         END SECTION: POSITIONING, STYLE & ANIMATION - Mobile First
 */
@@ -396,7 +397,16 @@ button:focus {
 .embedded-trailer {
     margin: 1px;
 }
+.hide-links {
+    visibility: hidden;
+}
+.show-links{
+    visibility: visible;
+}
 
+#___signin_0{
+    padding-top: 10px;
+}
 /*
 #######################################################################
         Media Queries to handle image & content responsive ness

@@ -30,7 +30,7 @@
 			<section class="page-header">
 				<div class="page-title"><h1>Genres</h1></div>
 				<div class="header-btn new-genre">
-					<form action="{{url_for('newGenre')}}" method = 'GET'>
+					<form class="{{visclass}}" action="{{url_for('newGenre')}}" method = 'GET'>
 						<input type="submit" value="Add Genre"></div>
 					</form>
 			</section>
@@ -47,8 +47,8 @@
 					</div>
 					<div class="genre-links">
 						<ul>
-							<li><a href="{{url_for('editGenre', genre_id = genre.id)}}">Edit</a></li>
-							<li><a href="{{url_for('deleteGenre', genre_id = genre.id)}}">Delete</a></li>
+							<li class="{{visclass}}"><a href="{{url_for('editGenre', genre_id = genre.id)}}">Edit</a></li>
+							<li class="{{visclass}}"><a href="{{url_for('deleteGenre', genre_id = genre.id)}}">Delete</a></li>
 						</ul>
 					</div>
 				</div>
