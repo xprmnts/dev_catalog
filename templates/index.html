@@ -3,15 +3,15 @@
 	<head>
 		<title>Trailr</title>
 		<meta charset="UTF-8">
-		<link rel="stylesheet" href="{{url_for('static',filename='styles.css')}}">
- 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="{{url_for('static',filename='css/styles.css')}}">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	</head>
 	<body>
 		<!--####################### Beginning of the Header Navigation #####################-->
 		<header>
 			<nav>
 				<div class="masthead">
-					<div id="logo"><a href="index.html"><strong>Trailr</strong></a></div>
+					<div id="logo"><a href="/"><strong>Trailr</strong></a></div>
 					<div id="hamburger">
 						<div class="change bar1"></div>
 						<div class="change bar2"></div>
@@ -27,19 +27,28 @@
 		</header>
 		<!--####################### End of the Header Navigation #####################-->
 		<!--####################### End of the Header Navigation #####################-->
-		<!--####################### Start Render Dynamic Trailer List #####################-->
-		<!--####################### Start Render Dynamic Genre List #####################-->
 		<div class="container">
+			<section class="page-header">
+				<div class="page-title"><h1>Trailers:</h1></div>
+			</section>
+		<!--####################### Start Render Dynamic Trailer List #####################-->
 			<div class="trailers-container">
-				{% for trailer in trailers %}
-				<div class="trailer-title">
-					Title: <a href="{{url_for('showTrailer', genre_id='1', trailer_id='1')}}">{{trailer.title}}</a>
-				</div>
-				{% endfor %}
-
+					{% for trailer in trailers %}
+					<div class="trailer-content" style="background: linear-gradient(rgba(0, 0, 0, 0.0) 75%, rgba(0, 0, 0, 0.0)25%, rgba(0, 0, 0, 0.9)), url('{{trailer.poster}}') no-repeat border-box center center; background-size:100%;">
+						<div class="trailer-links">
+							<ul>
+								<li><a href="{{url_for('showTrailer', genre_id = trailer.genre_id, trailer_id = trailer.id)}}">View</a></li>
+								<li><a href="{{url_for('editTrailer', genre_id = trailer.genre_id, trailer_id = trailer.id)}}">Edit</a></li>
+								<li><a href="{{url_for('deleteTrailer', genre_id = trailer.genre_id, trailer_id = trailer.id)}}">Delete</a></li>
+							</ul>
+						</div>
+					</div>
+					{% endfor %}
 			</div>
 		</div>
-		<!--####################### End of Dynamic Genre List #####################-->
 		<!--####################### End of Dynamic Trailer List #####################-->
+		<!--######################## Loding JQuery & JavaScript ########################-->
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script src="{{url_for('static',filename='js/app.js')}}" type="text/javascript"></script>
 	</body>
 </html>

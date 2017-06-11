@@ -11,7 +11,7 @@
 		<header>
 			<nav>
 				<div class="masthead">
-					<div id="logo"><a href="index.html"><strong>Trailr</strong></a></div>
+					<div id="logo"><a href="/"><strong>Trailr</strong></a></div>
 					<div id="hamburger">
 						<div class="change bar1"></div>
 						<div class="change bar2"></div>
@@ -26,9 +26,21 @@
 			</nav>
 		</header>
 		<!--####################### End of the Header Navigation #####################-->
-	<section class="show-trailer">
-		<iframe width="560" height="315" src="https://www.youtube.com/embed/svnAD0TApb8?autoplay=1" frameborder="0" allowfullscreen></iframe>
-	</section>
+		<div class="trailer-poster-container">
+			<img class="movie-poster" src="{{trailer.poster}}" height="315">
+			<iframe class="embedded-trailer" width="560" height="315" src="{{trailer.trailer}}?showinfo=0" frameborder="0" allowfullscreen></iframe>
+		</div>
+		<section class="movie-info">
+			<ul class="movie-data-list">
+				<li>Title: {{trailer.title}}</li>
+				<li>Year: {{trailer.year}}</li>
+				<li>Rated: {{trailer.rated}}</li>
+				<li>Director: {{trailer.director}}</li>
+				<li>IMDB Rating: {{trailer.imdb_rating}}</li>
+				<li>Plot: {{trailer.plot}}</li>
+			</ul>
+		</section>
+
 		<!--######################## Loding JQuery & JavaScript ########################-->
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 		<script src="{{url_for('static',filename='js/app.js')}}" type="text/javascript"></script>

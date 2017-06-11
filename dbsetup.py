@@ -35,7 +35,7 @@ class Trailer(Base):
 	poster = Column(String(128), nullable = True)
 	trailer = Column(String(128), nullable = True)
 	imdb_rating = Column(String(4), nullable = True)
-	imdb_id = Column(String(16), nullable = True, unique = True)
+	imdb_id = Column(String(16), nullable = True)
 	boxoffice = Column(String(16), nullable = True)
 	genre_id = Column(Integer, ForeignKey('genre.id'))
 	genre = relationship(Genre)

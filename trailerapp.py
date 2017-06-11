@@ -116,7 +116,7 @@ def newTrailer(genre_id):
     else:
         return render_template('newTrailer.html', genre=currentGenre)
 
-# TODO: Route to Edit a Trailer /library/#/Trailers/#/editTrailer
+# TODO: Route to Show a Trailer /library/#/Trailers/#/editTrailer
 
 
 @app.route('/genres/<int:genre_id>/trailers/<int:trailer_id>/showtrailer')

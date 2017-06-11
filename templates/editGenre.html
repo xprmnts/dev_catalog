@@ -11,7 +11,7 @@
 		<header>
 			<nav>
 				<div class="masthead">
-					<div id="logo"><a href="index.html"><strong>Trailr</strong></a></div>
+					<div id="logo"><a href="/"><strong>Trailr</strong></a></div>
 					<div id="hamburger">
 						<div class="change bar1"></div>
 						<div class="change bar2"></div>
@@ -32,9 +32,9 @@
 			</section>
 			<section class="edit-form edit-genre">
 				<form action="{{url_for('editGenre', genre_id = genre.id)}}" method="POST">
-					<input type="text" name="name" placeholder="Genre Name">
-					<input type="text" name="description" placeholder="Genre Description">
-					<input type="text" name="image" placeholder="Image URL">
+					<input type="text" name="name" value="{{genre.name}}">
+					<input type="text" name="description" value="{{genre.description}}">
+					<input type="text" name="image" value="{{genre.image}}">
 					<input type="submit" value="Submit">
 				</form>
 			</section>
