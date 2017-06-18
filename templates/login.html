@@ -10,39 +10,19 @@
 	</head>
 	<body>
 		<!--####################### Beginning of the Header Navigation #####################-->
-		<header>
-			<nav>
-				<div class="masthead">
-					<div id="logo"><a href="/"><strong>Trailr</strong></a></div>
-					<div id="hamburger">
-						<div class="change bar1"></div>
-						<div class="change bar2"></div>
-					</div>
-				</div>
-				<ul class="navlist">
-					<li><a href="{{url_for('searchTrailers')}}" class="navlist-item">Search</a></li>
-					<li><a href="{{url_for('showLandingPage')}}" class="navlist-item">Discover</a></li>
-					<li><a href="{{url_for('showGenres')}}" class="navlist-item">Genres</a></li>
-					<li >
-						<div class="navlist-item"">
-							<!-- GOOGLE PLUS SIGN IN BUTTON-->
-							<div id="signInButton">
-								<span class="g-signin"
-									data-scope="openid email"
-									data-clientid="156110599327-dj4enf83haq7dsi9peqfrobr6rk7hk1q.apps.googleusercontent.com"
-									data-redirecturi="postmessage"
-									data-accesstype="offline"
-									data-cookiepolicy="single_host_origin"
-									data-callback="signInCallback"
-									data-approvalprompt="force">
-								</span>
-							</div>
-							<!--END GOOGLE PLUS SIGN IN BUTTON -->
-						</div>
-					</li>
-				</ul>
-			</nav>
-		</header>
+		<!-- GOOGLE PLUS SIGN IN BUTTON-->
+		<div id="signInButton">
+			<span class="g-signin"
+				data-scope="openid email"
+				data-clientid="156110599327-dj4enf83haq7dsi9peqfrobr6rk7hk1q.apps.googleusercontent.com"
+				data-redirecturi="postmessage"
+				data-accesstype="offline"
+				data-cookiepolicy="single_host_origin"
+				data-callback="signInCallback"
+				data-approvalprompt="force">
+			</span>
+		</div>
+		<!--END GOOGLE PLUS SIGN IN BUTTON -->
 		<!--####################### End of the Header Navigation #####################-->
 		<!--####################### End of the Header Navigation #####################-->
 		<!--####################### Start Render Dynamic Trailer List #####################-->

@@ -13,12 +13,10 @@ from dbsetup import Base, Genre, Trailer, User
 # IMPORTS FOR THIS STEP
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
-from oauth2client.client import AccessTokenCredentials
 import httplib2
 import json
 from flask import make_response
 import requests
-
 
 app = Flask(__name__)
 
@@ -263,8 +261,7 @@ def gconnect():
         return response
 
     # Store the access token in the session for later use.
-    login_session['credentials'] = credentials.access_token
-    credentials = AccessTokenCredentials(login_session['credentials'], 'user-agent-value')
+    login_session['credentials'] = credentials.to_json()
     login_session['gplus_id'] = gplus_id
 
     # Get user info
@@ -281,11 +278,10 @@ def gconnect():
     output += '<h1>Welcome, '
     output += login_session['username']
     output += '!</h1>'
-    output += '<img src="'
+    #output += '<img src="'
     #output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    #output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
-    print("done!")
     return output
 
 # DISCONNECT - Revoke a current user's token and reset their login_session
@@ -293,35 +289,34 @@ def gconnect():
 
 @app.route('/gdisconnect')
 def gdisconnect():
-    access_token = login_session['access_token']
-    print('In gdisconnect access token is %s', access_token)
-    print('User name is: ')
-    print(login_session['username'])
-    if access_token is None:
-        print('Access Token is None')
-        response = make_response(json.dumps(
-            'Current user not connected.'), 401)
+        # Only disconnect a connected user.
+    credentials = json.loads(login_session['credentials'])
+    print(type(credentials))
+    print(credentials)
+    if credentials is None:
+        response = make_response(
+            json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session[
-        'access_token']
+    access_token = credentials['access_token']
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
-    print('result is ')
-    print(result)
+
     if result['status'] == '200':
-        del login_session['access_token']
+        # Reset the user's sesson.
+        del login_session['credentials']
         del login_session['gplus_id']
         del login_session['username']
         del login_session['email']
+
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
-
-        response = make_response(json.dumps(
-            'Failed to revoke token for given user.', 400))
+        # For whatever reason, the given token was invalid.
+        response = make_response(
+            json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
