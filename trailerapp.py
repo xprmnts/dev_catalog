@@ -8,7 +8,7 @@ import random
 import string
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from dbsetup import Base, Genre, Trailer, User
+from dbsetup import Base, Genre, Trailer, Users
 
 # IMPORTS FOR THIS STEP
 from oauth2client.client import flow_from_clientsecrets
@@ -33,6 +33,25 @@ session = DBSession()
 # Fake Data
 # Route to Discover Page /
 
+#Creating Users
+def createUser(login_session):
+    newUser = Users(username = login_session['username'], email = login_session['email'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(Users).filter_by(email = login_session['email']).one()
+    return user.id
+
+def getUserInfo(users_id):
+    user = session.query(Users).filter_by(id = users_id).one()
+    return user
+
+def getUserID(email):
+    try:
+        user = session.query(Users).filter_by(email = email).one()
+        return user.id
+        print ("Returning User ID: %s" % user.id)
+    except:
+        return None
 
 @app.route('/')
 @app.route('/discover')
@@ -71,7 +90,8 @@ def newGenre():
             name=request.form['name'],
             description=request.form['description'],
             num_trailers=0,
-            image=request.form['image'])
+            image=request.form['image'],
+            users_id=login_session['users_id'])
         session.add(aNewGenre)
         session.commit()
         return redirect(url_for('showGenres'))
@@ -102,6 +122,8 @@ def editGenre(genre_id):
             return render_template('editGenre.html', genre_id=genre_id, genre=currentGenre, loggedIn=loggedIn)
         else:
             loggedIn = 'true'
+            if currentGenre.users_id != login_session['users_id']:
+                return "<script>function myFunction(){alert('Unauthorized');}</script><body onload='myFunction()''>"
             return render_template('editGenre.html', genre_id=genre_id, genre=currentGenre, loggedIn=loggedIn)
 
 # Route to Delete selected Genre Page /genres/#/deleteGenre (DELTE Method)
@@ -121,6 +143,8 @@ def deleteGenre(genre_id):
             return render_template('deleteGenre.html', genre_id=genre_id, genre=currentGenre, loggedIn=loggedIn)
         else:
             loggedIn = 'true'
+            if currentGenre.users_id != login_session['users_id']:
+                return "<script>function myFunction(){alert('Unauthorized');}</script><body onload='myFunction()''>"
             return render_template('deleteGenre.html', genre_id=genre_id, genre=currentGenre, loggedIn=loggedIn)
 
 
@@ -157,6 +181,8 @@ def newTrailer(genre_id):
             boxoffice=request.form['boxoffice'],
             genre_id=genre_id)
         session.add(aNewTrailer)
+        currentGenre.num_trailers = currentGenre.num_trailers + 1
+        session.add(currentGenre)
         session.commit()
         return redirect(url_for('showTrailers', genre_id=currentGenre.id))
     else:
@@ -208,6 +234,8 @@ def editTrailer(genre_id, trailer_id):
             return render_template('editTrailer.html', genre_id=genre_id, trailer=trailerToEdit, loggedIn=loggedIn)
         else:
             loggedIn = 'true'
+            if trailerToEdit.users_id != login_session['users_id']:
+                return "<script>function myFunction(){alert('Unauthorized');}</script><body onload='myFunction()''>"
             return render_template('editTrailer.html', genre_id=genre_id, trailer=trailerToEdit, loggedIn=loggedIn)
 
 # TODO: Route to Delete a Trailer /library/#/Content/#/deleteTrailer
@@ -227,6 +255,8 @@ def deleteTrailer(genre_id, trailer_id):
             return render_template('deleteTrailer.html', genre_id=genre_id, trailer=trailerToDelete, loggedIn=loggedIn)
         else:
             loggedIn = 'true'
+            if trailerToDelete.users_id != login_session['users_id']:
+                return "<script>function myFunction(){alert('Unauthorized');}</script><body onload='myFunction()''>"
             return render_template('deleteTrailer.html', genre_id=genre_id, trailer=trailerToDelete, loggedIn=loggedIn)
 
 # TODO: Route to Search Results Page /searchTrailers
@@ -328,6 +358,13 @@ def gconnect():
 
     login_session['username'] = data['name']
     login_session['email'] = data['email']
+
+
+    users_id = getUserID(login_session['email'])
+    if users_id == None:
+        print("User Id = NONE %s" % users_id)
+        users_id = createUser(login_session)
+    login_session['users_id'] = users_id
 
     output = ''
     output += '<h1>Welcome, '
