@@ -38,7 +38,12 @@ session = DBSession()
 @app.route('/discover')
 def showLandingPage():
     trailers = session.query(Trailer).all()
-    return render_template('index.html', trailers=trailers)
+    if 'username' not in login_session:
+        loggedIn = 'false'
+        return render_template('index.html', trailers=trailers, loggedIn=loggedIn, visclass="hide-links")
+    else:
+        loggedIn = 'true'
+        return render_template('index.html', trailers=trailers, loggedIn=loggedIn)
 # TODO: Show assortment of movie posters
 # TODO: Allow filtering by Genere
 # TODO: Allow searching by Movie Name & Year
@@ -49,7 +54,12 @@ def showLandingPage():
 @app.route('/genres')
 def showGenres():
     genres = session.query(Genre).all()
-    return render_template('genres.html', genres=genres, visclass="hide-links")
+    if 'username' not in login_session:
+        loggedIn = 'false'
+        return render_template('genres.html', genres=genres, loggedIn=loggedIn, visclass="hide-links")
+    else:
+        loggedIn = 'true'
+        return render_template('genres.html', genres=genres, loggedIn=loggedIn)
 
 # Route to Add Genre Page /genre/addGenre
 
@@ -66,7 +76,12 @@ def newGenre():
         session.commit()
         return redirect(url_for('showGenres'))
     else:
-        return render_template('newGenre.html')
+        if 'username' not in login_session:
+            loggedIn = 'false'
+            return render_template('newGenre.html', loggedIn=loggedIn)
+        else:
+            loggedIn = 'true'
+            return render_template('newGenre.html', loggedIn=loggedIn)
 
 # Route to Edit selected Genre Page /genres/#/editGenre (POST)
 
@@ -82,7 +97,12 @@ def editGenre(genre_id):
         session.commit()
         return redirect(url_for('showGenres'))
     else:
-        return render_template('editGenre.html', genre_id=genre_id, genre=currentGenre)
+        if 'username' not in login_session:
+            loggedIn = 'false'
+            return render_template('editGenre.html', genre_id=genre_id, genre=currentGenre, loggedIn=loggedIn)
+        else:
+            loggedIn = 'true'
+            return render_template('editGenre.html', genre_id=genre_id, genre=currentGenre, loggedIn=loggedIn)
 
 # Route to Delete selected Genre Page /genres/#/deleteGenre (DELTE Method)
 # TODO: Generate a popup instead of sending to new page
@@ -96,7 +116,12 @@ def deleteGenre(genre_id):
         session.commit()
         return redirect(url_for('showGenres'))
     else:
-        return render_template('deleteGenre.html', genre_id=genre_id, genre=currentGenre)
+        if 'username' not in login_session:
+            loggedIn = 'false'
+            return render_template('deleteGenre.html', genre_id=genre_id, genre=currentGenre, loggedIn=loggedIn)
+        else:
+            loggedIn = 'true'
+            return render_template('deleteGenre.html', genre_id=genre_id, genre=currentGenre, loggedIn=loggedIn)
 
 
 # Route to View Trailers by Genere Page /genres/#/Trailers/
@@ -106,8 +131,12 @@ def deleteGenre(genre_id):
 def showTrailers(genre_id):
     currentGenre = session.query(Genre).filter_by(id=genre_id).one()
     trailers = session.query(Trailer).filter_by(genre_id=genre_id).all()
-    return render_template('trailers.html', trailers=trailers, genre=currentGenre)
-
+    if 'username' not in login_session:
+        loggedIn = 'false'
+        return render_template('trailers.html', trailers=trailers, genre=currentGenre, loggedIn=loggedIn)
+    else:
+        loggedIn = 'true'
+        return render_template('trailers.html', trailers=trailers, genre=currentGenre, loggedIn=loggedIn)
 # TODO: Route to Add Trailer /library/#/Trailers/addTrailer
 
 
@@ -131,7 +160,12 @@ def newTrailer(genre_id):
         session.commit()
         return redirect(url_for('showTrailers', genre_id=currentGenre.id))
     else:
-        return render_template('newTrailer.html', genre=currentGenre)
+        if 'username' not in login_session:
+            loggedIn = 'false'
+            return render_template('newTrailer.html', genre=currentGenre, loggedIn=loggedIn)
+        else:
+            loggedIn = 'true'
+            return render_template('newTrailer.html', genre=currentGenre, loggedIn=loggedIn)
 
 # TODO: Route to Show a Trailer /library/#/Trailers/#/editTrailer
 
@@ -140,7 +174,12 @@ def newTrailer(genre_id):
 def showTrailer(genre_id, trailer_id):
     trailerToShow = session.query(Trailer).filter_by(
         id=trailer_id, genre_id=genre_id).one()
-    return render_template('showTrailer.html', trailer=trailerToShow)
+    if 'username' not in login_session:
+        loggedIn = 'false'
+        return render_template('showTrailer.html', trailer=trailerToShow, loggedIn=loggedIn)
+    else:
+        loggedIn = 'true'
+        return render_template('showTrailer.html', trailer=trailerToShow, loggedIn=loggedIn)
 
 # TODO: Route to Edit a Trailer /library/#/Trailers/#/editTrailer
 
@@ -164,7 +203,12 @@ def editTrailer(genre_id, trailer_id):
         session.commit()
         return redirect(url_for('showTrailers', genre_id=trailerToEdit.genre_id))
     else:
-        return render_template('editTrailer.html', genre_id=genre_id, trailer=trailerToEdit)
+        if 'username' not in login_session:
+            loggedIn = 'false'
+            return render_template('editTrailer.html', genre_id=genre_id, trailer=trailerToEdit, loggedIn=loggedIn)
+        else:
+            loggedIn = 'true'
+            return render_template('editTrailer.html', genre_id=genre_id, trailer=trailerToEdit, loggedIn=loggedIn)
 
 # TODO: Route to Delete a Trailer /library/#/Content/#/deleteTrailer
 
@@ -178,7 +222,12 @@ def deleteTrailer(genre_id, trailer_id):
         session.commit()
         return redirect(url_for('showTrailers', genre_id=genre_id))
     else:
-        return render_template('deleteTrailer.html', genre_id=genre_id, trailer=trailerToDelete)
+        if 'username' not in login_session:
+            loggedIn = 'false'
+            return render_template('deleteTrailer.html', genre_id=genre_id, trailer=trailerToDelete, loggedIn=loggedIn)
+        else:
+            loggedIn = 'true'
+            return render_template('deleteTrailer.html', genre_id=genre_id, trailer=trailerToDelete, loggedIn=loggedIn)
 
 # TODO: Route to Search Results Page /searchTrailers
 # TODO: Instead of routing to different page render results within search page
@@ -186,7 +235,12 @@ def deleteTrailer(genre_id, trailer_id):
 
 @app.route('/searchtrailers')
 def searchTrailers():
-    return render_template('resultTrailers.html', trailers=trailers)
+    if 'username' not in login_session:
+       loggedIn = 'false'
+       return render_template('resultTrailers.html', trailers=trailers, loggedIn=loggedIn)
+    else:
+       loggedIn = 'true'
+       return render_template('resultTrailers.html', trailers=trailers, loggedIn=loggedIn)
 
 # TODO: Route to API End Points /trailersJSON
 
@@ -270,6 +324,7 @@ def gconnect():
     answer = requests.get(userinfo_url, params=params)
 
     data = answer.json()
+    print(data)
 
     login_session['username'] = data['name']
     login_session['email'] = data['email']
@@ -281,7 +336,7 @@ def gconnect():
     #output += '<img src="'
     #output += login_session['picture']
     #output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-    flash("you are now logged in as %s" % login_session['username'])
+    flash('Successfull Login.')
     return output
 
 # DISCONNECT - Revoke a current user's token and reset their login_session
@@ -309,16 +364,17 @@ def gdisconnect():
         del login_session['gplus_id']
         del login_session['username']
         del login_session['email']
-
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
-        return response
+        flash('Successfully disconnected.')
+        return redirect(url_for('showLandingPage'))
     else:
         # For whatever reason, the given token was invalid.
         response = make_response(
             json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
+
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'

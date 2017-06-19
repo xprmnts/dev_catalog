@@ -1,0 +1,23 @@
+<!--####################### Beginning of the Header Navigation #####################-->
+		<header>
+			<nav>
+				<div class="masthead">
+					<div id="logo"><a href="/"><strong>Trailr</strong></a></div>
+					<div id="hamburger">
+						<div class="change bar1"></div>
+						<div class="change bar2"></div>
+					</div>
+				</div>
+				<ul class="navlist">
+					<li><a href="{{url_for('searchTrailers')}}" class="navlist-item">Search</a></li>
+					<li><a href="{{url_for('showLandingPage')}}" class="navlist-item">Discover</a></li>
+					<li><a href="{{url_for('showGenres')}}" class="navlist-item">Genres</a></li>
+					{% if loggedIn=='false' %}
+					<li><a href="{{url_for('login')}}" class="navlist-item">Login</a></li>
+					{% else %}
+					<li><a href="{{url_for('gdisconnect')}}" class="navlist-item">Logout</a></li>
+					{% endif %}
+				</ul>
+			</nav>
+		</header>
+<!--####################### End of the Header Navigation #####################-->

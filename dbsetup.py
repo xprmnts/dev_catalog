@@ -17,6 +17,8 @@ class Genre(Base):
 	description = Column(String(512), nullable = True)
 	num_trailers = Column(Integer, nullable = True)
 	image = Column(String(128), nullable = True)
+	#user_id = Column(Integer, ForeignKey('user.id'))
+	#user = relationship(user)
 
 
 	#TODO: Serailize for JSON
@@ -39,6 +41,9 @@ class Trailer(Base):
 	boxoffice = Column(String(16), nullable = True)
 	genre_id = Column(Integer, ForeignKey('genre.id'))
 	genre = relationship(Genre)
+	#user_id = Column(Integer, ForeignKey('user.id'))
+	#user = relationship(User)
+
 
 class User(Base):
 	__tablename__ = "user"
