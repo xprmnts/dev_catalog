@@ -9,6 +9,7 @@ import string
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dbsetup import Base, Genre, Trailer, Users
+import urllib
 
 # IMPORTS FOR THIS STEP
 from oauth2client.client import flow_from_clientsecrets
@@ -265,12 +266,28 @@ def deleteTrailer(genre_id, trailer_id):
 
 @app.route('/searchtrailers')
 def searchTrailers():
-    if 'username' not in login_session:
-       loggedIn = 'false'
-       return render_template('resultTrailers.html', trailers=trailers, loggedIn=loggedIn)
+    return render_template('form.html')
+
+@app.route('/searchprocess', methods=['POST'])
+def searchProcess():
+    title = request.form['title']
+    year = request.form['year']
+    # API key for OMDB API:
+    apiKey = 'a7ab3c0e'#insert API Key
+    if year:
+        f = { 't' : title, 'y' : year, 'apiKey' : apiKey}
     else:
-       loggedIn = 'true'
-       return render_template('resultTrailers.html', trailers=trailers, loggedIn=loggedIn)
+        f = { 't' : title, 'apiKey' : apiKey}
+    params = urllib.urlencode(f)
+    r = requests.get('http://www.omdbapi.com/?%s' %
+                     (params))
+    movieJSON = r.json()
+    posterURL = movieJSON['Poster']
+    if title:
+        return jsonify({'posterURL' : posterURL})
+
+    return jsonify({'error' : 'Unsuccesful Search!'})
+
 
 # TODO: Route to API End Points /trailersJSON
 

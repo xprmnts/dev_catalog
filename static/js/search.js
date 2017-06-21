@@ -1,0 +1,3 @@
+$(documen).ready(function()){
+
+});

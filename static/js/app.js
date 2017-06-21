@@ -4,7 +4,7 @@ and display the nav elements with animation
 */
 $('#hamburger').click(function(){
 	$('#hamburger').toggleClass('change');
-    $('li').toggleClass('responsive');
+    $('li').toggleClass('responsive');form.js
     $('nav').toggleClass('show');
 
 });

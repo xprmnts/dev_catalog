@@ -1,11 +1,29 @@
 {% extends "main.html" %}
 {% block content %}
 {% include "nav.html" %}
+		<script src="{{url_for('static',filename='js/search.js')}}" type="text/javascript"></script>
 		<!--####################### End of the Header Navigation #####################-->
 		<!--####################### Start Render Dynamic Trailer List #####################-->
 		<div class="container">
-			<h1>This Page is Under Construction.</h1>
+			<section class="page-header">
+				<div class="page-title"><h1>Search Trailers:</h1></div>
+			</section>
+			<section class="search-form">
+				<form>
+					<input id="titleInput" type="text" name="title" placeholder="Title" ="">
+					<input id="yearInput" type="text" name="year" placeholder="Year" ="">
+					<input type="submit" value="Submit">
+				</form>
+			</section>
+			<br><br><br>
+			<div id="successAlert" class="success search-result" style="display:none;">
 
+			</div>
+
+			<div id="errorAlert" class="fail search-result" style="display:none;">
+
+			</div>
 		</div>
-		<!--####################### End of Dynamic Trailer List #####################-->
+		<script src="{{url_for('static',filename='js/search.js')}}" type="text/javascript"></script>
+		<!--####################### action="{{ url_for('searchProcess')}}" method="POST" #####################-->
 {% endblock %}

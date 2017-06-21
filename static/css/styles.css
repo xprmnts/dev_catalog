@@ -3,6 +3,7 @@
                           Global Properties
 #######################################################################
 */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -338,7 +339,7 @@ input[type=text], select {
 }
 
 
-input[type=submit] {
+input[type=submit], button {
     line-height: 30px;
     width: 100px;
     background: #A15341;
@@ -408,6 +409,22 @@ button:focus {
 #___signin_0{
     padding-top: 10px;
 }
+
+
+
+.alert-success{
+    max-width: 800px;
+    margin: auto;
+    margin-top: 100px;
+}
+
+.alert-danger{
+    max-width: 800px;
+    min-height: 40px;
+}
+
+
+
 /*
 #######################################################################
         Media Queries to handle image & content responsive ness
