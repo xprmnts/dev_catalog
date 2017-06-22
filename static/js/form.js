@@ -18,9 +18,7 @@ $(document).ready(function() {
 			}
 			else {
 				$('#successAlert').show();
-				console.log(data.posterURL);
-				$('#trailerPoster').css("height","400px");
-				$('#trailerPoster').css("background", "url('"+data.posterURL+"') no-repeat border-box center center");
+				$('#trailerPoster').append("<iframe width='560' height='315' src="+data.trailerURL+" frameborder='0' allowfullscreen></iframe>");
 				$('#errorAlert').hide();
 			}
 

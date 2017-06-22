@@ -9,7 +9,15 @@ import string
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dbsetup import Base, Genre, Trailer, Users
-import urllib
+import urllib2
+import trailersearch
+
+from apiclient.discovery import build
+from apiclient.errors import HttpError
+from oauth2client.tools import argparser
+#import urllib.request
+#import urllib.error
+
 
 # IMPORTS FOR THIS STEP
 from oauth2client.client import flow_from_clientsecrets
@@ -273,18 +281,28 @@ def searchProcess():
     title = request.form['title']
     year = request.form['year']
     # API key for OMDB API:
-    apiKey = 'a7ab3c0e'#insert API Key
-    if year:
-        f = { 't' : title, 'y' : year, 'apiKey' : apiKey}
-    else:
-        f = { 't' : title, 'apiKey' : apiKey}
-    params = urllib.urlencode(f)
-    r = requests.get('http://www.omdbapi.com/?%s' %
-                     (params))
-    movieJSON = r.json()
-    posterURL = movieJSON['Poster']
+    # apiKey = 'a7ab3c0e'#insert API Key
+    # if year:
+    #     f = { 't' : title, 'y' : year, 'apiKey' : apiKey}
+    # else:
+    #     f = { 't' : title, 'apiKey' : apiKey}
+    # params = urllib.urlencode(f)
+    # r = requests.get('http://www.omdbapi.com/?%s' %
+    #                  (params))
+    # movieJSON = r.json()
+    # posterURL = movieJSON['Poster']
+    argparser.add_argument("--q", help="Search term", default="Google")
+    argparser.add_argument("--max-results", help="Max results", default=1)
+    args = argparser.parse_args()
+
+    try:
+      trailerID = trailersearch.youtube_search(args)
+    except urllib2.HTTPError as e:
+      return ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
+
     if title:
-        return jsonify({'posterURL' : posterURL})
+        trailerURL = ('https://www.youtube.com/embed/%s' % trailerID)
+        return jsonify({'trailerURL' : trailerURL})
 
     return jsonify({'error' : 'Unsuccesful Search!'})
 
