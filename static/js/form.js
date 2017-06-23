@@ -18,7 +18,10 @@ $(document).ready(function() {
 			}
 			else {
 				$('#successAlert').show();
-				$('#trailerPoster').append("<iframe width='560' height='315' src="+data.trailerURL+" frameborder='0' allowfullscreen></iframe>");
+				$('#trailerPoster').css("height","400px");
+ 				//$('#trailerPoster').append(data);
+ 				$('#trailerPoster').css("background", "url('"+data.Poster+"') no-repeat border-box center center");
+				$('#trailerPoster').after("<iframe width='560' height='315' src="+data.Trailer+" frameborder='0' allowfullscreen></iframe>");
 				$('#errorAlert').hide();
 			}
 
