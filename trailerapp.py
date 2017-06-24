@@ -1,6 +1,6 @@
 # Trailr App
 # Author: XPRMNTS
-# Python Version: 3
+# Python Version: 2.7.6
 #------------------------------------------------------------------------------
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask import session as login_session
@@ -9,18 +9,16 @@ import string
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dbsetup import Base, Genre, Trailer, Users
+
+# For Youtube API
 import urllib2
 import urllib
 import trailersearch
-
 from apiclient.discovery import build
 from apiclient.errors import HttpError
 from oauth2client.tools import argparser
-#import urllib.request
-#import urllib.error
 
-
-# IMPORTS FOR THIS STEP
+# For Google Sign in API
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 import httplib2
@@ -73,9 +71,142 @@ def showLandingPage():
     else:
         loggedIn = 'true'
         return render_template('index.html', trailers=trailers, loggedIn=loggedIn)
-# TODO: Show assortment of movie posters
-# TODO: Allow filtering by Genere
-# TODO: Allow searching by Movie Name & Year
+
+
+# TODO: Route to Login Page
+
+
+@app.route('/login')
+def login():
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in xrange(32))
+    login_session['state'] = state
+    # return "The current session state is %s" % login_session['state']
+    return render_template('login.html', STATE=state)
+
+
+@app.route('/gconnect', methods=['POST'])
+def gconnect():
+    # Validate state token
+    if request.args.get('state') != login_session['state']:
+        response = make_response(json.dumps('Invalid state parameter.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    # Obtain authorization code
+    code = request.data
+
+    try:
+        # Upgrade the authorization code into a credentials object
+        oauth_flow = flow_from_clientsecrets('/vagrant/client_secrets.json', scope='')
+        oauth_flow.redirect_uri = 'postmessage'
+        credentials = oauth_flow.step2_exchange(code)
+    except FlowExchangeError:
+        response = make_response(
+            json.dumps('Failed to upgrade the authorization code.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+    # Check that the access token is valid.
+    # store only the access_token
+    access_token = credentials.access_token
+    url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
+           % access_token)
+    h = httplib2.Http()
+    result = json.loads(h.request(url, 'GET')[1])
+    # If there was an error in the access token info, abort.
+    if result.get('error') is not None:
+        response = make_response(json.dumps(result.get('error')), 500)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+    # Verify that the access token is used for the intended user.
+    gplus_id = credentials.id_token['sub']
+    if result['user_id'] != gplus_id:
+        response = make_response(
+            json.dumps("Token's user ID doesn't match given user ID."), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+    # Verify that the access token is valid for this app.
+    if result['issued_to'] != CLIENT_ID:
+        response = make_response(
+            json.dumps("Token's client ID does not match app's."), 401)
+        print("Token's client ID does not match app's.")
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+    stored_credentials = login_session.get('credentials')
+    stored_gplus_id = login_session.get('gplus_id')
+    if stored_credentials is not None and gplus_id == stored_gplus_id:
+        response = make_response(json.dumps('Current user is already connected.'),
+                                 200)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+    # Store the access token in the session for later use.
+    login_session['credentials'] = credentials.to_json()
+    login_session['gplus_id'] = gplus_id
+
+    # Get user info
+    userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
+    params = {'access_token': credentials.access_token, 'alt': 'json'}
+    answer = requests.get(userinfo_url, params=params)
+
+    data = answer.json()
+    print(data)
+
+    login_session['username'] = data['name']
+    login_session['email'] = data['email']
+
+
+    users_id = getUserID(login_session['email'])
+    if users_id == None:
+        print("User Id = NONE %s" % users_id)
+        users_id = createUser(login_session)
+    login_session['users_id'] = users_id
+
+    output = ''
+    output += '<h1>Welcome, '
+    output += login_session['username']
+    output += '!</h1>'
+    flash('Successfull Login.')
+    return output
+
+# DISCONNECT - Revoke a current user's token and reset their login_session
+
+
+@app.route('/gdisconnect')
+def gdisconnect():
+        # Only disconnect a connected user.
+    credentials = json.loads(login_session['credentials'])
+    print(type(credentials))
+    print(credentials)
+    if credentials is None:
+        response = make_response(
+            json.dumps('Current user not connected.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    access_token = credentials['access_token']
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[0]
+
+    if result['status'] == '200':
+        # Reset the user's sesson.
+        del login_session['credentials']
+        del login_session['gplus_id']
+        del login_session['username']
+        del login_session['email']
+        response = make_response(json.dumps('Successfully disconnected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+        flash('Successfully disconnected.')
+        return redirect(url_for('showLandingPage'))
+    else:
+        # For whatever reason, the given token was invalid.
+        response = make_response(
+            json.dumps('Failed to revoke token for given user.', 400))
+        response.headers['Content-Type'] = 'application/json'
+        return response
 
 # Route to Genres Page /genres
 
@@ -275,7 +406,7 @@ def deleteTrailer(genre_id, trailer_id):
 
 @app.route('/searchtrailers')
 def searchTrailers():
-    return render_template('form.html')
+    return render_template('searchTrailers.html')
 
 @app.route('/searchprocess', methods=['POST'])
 def searchProcess():
@@ -311,147 +442,97 @@ def searchProcess():
 
     return jsonify({'error' : 'Unsuccesful Search!'})
 
+# Accept incoming search request for a movie and return movie data
+
+
+@app.route('/newsearchedtrailer', methods=['POST'])
+def newSearchedTrailer():
+    genre = request.form['Genre']
+    print(genre)
+
+    exists = session.query(Genre.id).filter_by(name=genre).scalar() is not None
+    print(exists)
+
+    if exists:
+        currentGenre = session.query(Genre).filter_by(name=genre).one()
+        genre_id = currentGenre.id
+        print(genre_id)
+        aNewTrailer = Trailer(
+            title=request.form['Title'],
+            year=request.form['Year'],
+            rated=request.form['Rated'],
+            plot=request.form['Plot'],
+            director=request.form['Director'],
+            poster=request.form['Poster'],
+            trailer=request.form['Trailer'],
+            imdb_rating=request.form['imdbRating'],
+            imdb_id=request.form['imdbID'],
+            genre_id=genre_id)
+        session.add(aNewTrailer)
+        currentGenre.num_trailers = currentGenre.num_trailers + 1
+        session.add(currentGenre)
+        session.commit()
+        return jsonify({'success': 'movie added'})
+    else:
+        aNewGenre = Genre(
+            name=genre,
+            description=genre,
+            num_trailers=0,
+            image='/images/genre_background.jpg',
+            users_id=login_session['users_id'])
+        session.add(aNewGenre)
+        session.commit()
+        genre_id = session.query(Genre.id).filter_by(name=genre).scalar()
+        aNewTrailer = Trailer(
+            title=request.form['Title'],
+            year=request.form['Year'],
+            rated=request.form['Rated'],
+            plot=request.form['Plot'],
+            director=request.form['Director'],
+            poster=request.form['Poster'],
+            trailer=request.form['Trailer'],
+            imdb_rating=request.form['imdbRating'],
+            imdb_id=request.form['imdbID'],
+            boxoffice=request.form['Boxoffice'],
+            genre_id=genre_id)
+        session.add(aNewTrailer)
+        currentGenre = session.query(Genre).filter_by(id=genre_id).one()
+        currentGenre.num_trailers = currentGenre.num_trailers + 1
+        session.add(currentGenre)
+        session.commit()
+        return jsonify({'success': 'movie added'})
+
+    return jsonify({'error': 'failed to add movie'})
+
 
 # TODO: Route to API End Points /trailersJSON
 
-# TODO: Route to Login Page
+@app.route('/genres/JSON')
+def allGenresJSON():
+    genres = session.query(Genre).all()
+    return jsonify(Genre=[g.serialize for g in genres])
 
+@app.route('/trailers/JSON')
+def allTrailersJSON():
+    trailers = session.query(Trailer).all()
+    return jsonify(Trailer=[t.serialize for t in trailers])
 
-@app.route('/login')
-def login():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in xrange(32))
-    login_session['state'] = state
-    # return "The current session state is %s" % login_session['state']
-    return render_template('login.html', STATE=state)
+@app.route('/users/JSON')
+def allUsersJSON():
+    users = session.query(Users).all()
+    return jsonify(Trailer=[u.serialize for u in users])
 
+@app.route('/genres/<int:genre_id>/trailers/JSON')
+def trailersInGenreJSON(genre_id):
+    currentGenre = session.query(Genre).filter_by(id=genre_id).one()
+    trailers = session.query(Trailer).filter_by(genre_id=genre_id).all()
+    return jsonify(Trailer=[t.serialize for t in trailers])
 
-@app.route('/gconnect', methods=['POST'])
-def gconnect():
-    # Validate state token
-    if request.args.get('state') != login_session['state']:
-        response = make_response(json.dumps('Invalid state parameter.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-    # Obtain authorization code
-    code = request.data
-
-    try:
-        # Upgrade the authorization code into a credentials object
-        oauth_flow = flow_from_clientsecrets('/vagrant/client_secrets.json', scope='')
-        oauth_flow.redirect_uri = 'postmessage'
-        credentials = oauth_flow.step2_exchange(code)
-    except FlowExchangeError:
-        response = make_response(
-            json.dumps('Failed to upgrade the authorization code.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-
-    # Check that the access token is valid.
-    # store only the access_token
-    access_token = credentials.access_token
-    url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
-           % access_token)
-    h = httplib2.Http()
-    result = json.loads(h.request(url, 'GET')[1])
-    # If there was an error in the access token info, abort.
-    if result.get('error') is not None:
-        response = make_response(json.dumps(result.get('error')), 500)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-
-    # Verify that the access token is used for the intended user.
-    gplus_id = credentials.id_token['sub']
-    if result['user_id'] != gplus_id:
-        response = make_response(
-            json.dumps("Token's user ID doesn't match given user ID."), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-
-    # Verify that the access token is valid for this app.
-    if result['issued_to'] != CLIENT_ID:
-        response = make_response(
-            json.dumps("Token's client ID does not match app's."), 401)
-        print("Token's client ID does not match app's.")
-        response.headers['Content-Type'] = 'application/json'
-        return response
-
-    stored_credentials = login_session.get('credentials')
-    stored_gplus_id = login_session.get('gplus_id')
-    if stored_credentials is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-
-    # Store the access token in the session for later use.
-    login_session['credentials'] = credentials.to_json()
-    login_session['gplus_id'] = gplus_id
-
-    # Get user info
-    userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
-    params = {'access_token': credentials.access_token, 'alt': 'json'}
-    answer = requests.get(userinfo_url, params=params)
-
-    data = answer.json()
-    print(data)
-
-    login_session['username'] = data['name']
-    login_session['email'] = data['email']
-
-
-    users_id = getUserID(login_session['email'])
-    if users_id == None:
-        print("User Id = NONE %s" % users_id)
-        users_id = createUser(login_session)
-    login_session['users_id'] = users_id
-
-    output = ''
-    output += '<h1>Welcome, '
-    output += login_session['username']
-    output += '!</h1>'
-    #output += '<img src="'
-    #output += login_session['picture']
-    #output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-    flash('Successfull Login.')
-    return output
-
-# DISCONNECT - Revoke a current user's token and reset their login_session
-
-
-@app.route('/gdisconnect')
-def gdisconnect():
-        # Only disconnect a connected user.
-    credentials = json.loads(login_session['credentials'])
-    print(type(credentials))
-    print(credentials)
-    if credentials is None:
-        response = make_response(
-            json.dumps('Current user not connected.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-    access_token = credentials['access_token']
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
-    h = httplib2.Http()
-    result = h.request(url, 'GET')[0]
-
-    if result['status'] == '200':
-        # Reset the user's sesson.
-        del login_session['credentials']
-        del login_session['gplus_id']
-        del login_session['username']
-        del login_session['email']
-        response = make_response(json.dumps('Successfully disconnected.'), 200)
-        response.headers['Content-Type'] = 'application/json'
-        flash('Successfully disconnected.')
-        return redirect(url_for('showLandingPage'))
-    else:
-        # For whatever reason, the given token was invalid.
-        response = make_response(
-            json.dumps('Failed to revoke token for given user.', 400))
-        response.headers['Content-Type'] = 'application/json'
-        return response
-
+@app.route('/genres/<int:genre_id>/trailers/<int:trailer_id>/JSON')
+def oneTrailerJSON(genre_id, trailer_id):
+    trailerToShow = session.query(Trailer).filter_by(
+        id=trailer_id, genre_id=genre_id).one()
+    return jsonify(Trailer=[trailerToShow.serialize])
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'

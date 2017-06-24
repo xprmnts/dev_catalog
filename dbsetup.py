@@ -17,6 +17,15 @@ class Users(Base):
 	username = Column(String(64), unique=True)
 	email = Column(String(128), unique=True)
 
+	@property
+	def serialize(self):
+		#Returns object data in easily serializable format
+		return {
+			'id' : self.id,
+			'username'	:	self.username,
+			'email'	:	self.email,
+		}
+
 # Create the Table Classes
 class Genre(Base):
 	__tablename__ = "genre"
@@ -28,6 +37,17 @@ class Genre(Base):
 	image = Column(String(128), nullable = True)
 	users_id = Column(Integer, ForeignKey('users.id'))
 	users = relationship(Users)
+
+	@property
+	def serialize(self):
+		#Returns object data in easily serializable format
+		return {
+			'id' : self.id,
+			'name'	:	self.name,
+			'description'	:	self.description,
+			'numTrailers'	:	self.num_trailers,
+			'image'	:	self.image,
+		}
 
 
 	#TODO: Serailize for JSON
@@ -43,7 +63,7 @@ class Trailer(Base):
 	genre = Column(String(32), nullable = True)
 	plot = Column(String(512), nullable = True)
 	director = Column(String(64), nullable = True)
-	poster = Column(String(128), nullable = True)
+	poster = Column(String(256), nullable = True)
 	trailer = Column(String(128), nullable = True)
 	imdb_rating = Column(String(4), nullable = True)
 	imdb_id = Column(String(16), nullable = True)
@@ -53,6 +73,24 @@ class Trailer(Base):
 	users_id = Column(Integer, ForeignKey('users.id'))
 	users = relationship(Users)
 
+	@property
+	def serialize(self):
+		#Returns object data in easily serializable format
+		return {
+			'id' : self.id,
+			'title'	:	self.title,
+			'year'	:	self.year,
+			'rated'	:	self.rated,
+			'released'	:	self.released,
+			'genre'	:	self.genre,
+			'plot'	:	self.plot,
+			'director'	:	self.director,
+			'poster'	:	self.poster,
+			'trialer'	:	self.trailer,
+			'imdbRating'	:	self.imdb_rating,
+			'imdbId'	:	self.imdb_id,
+			'boxoffice'	:	self.boxoffice,
+		}
 
 engine = create_engine('postgresql://catalog_owner:pass1234@localhost/trailer_catalog')
 Base.metadata.create_all(engine)
