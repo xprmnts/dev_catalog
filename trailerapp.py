@@ -203,6 +203,7 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+# End of login management -----------------------------------------------------
 
 # Main Page - Show Trailer Content from all genres in order created
 
@@ -533,6 +534,32 @@ def newSearchedTrailer():
 
 # TODO: Route to API End Points /trailersJSON
 
+@app.route('/genres/JSON')
+def allGenresJSON():
+    genres = session.query(Genre).all()
+    return jsonify(Genre=[g.serialize for g in genres])
+
+@app.route('/trailers/JSON')
+def allTrailersJSON():
+    trailers = session.query(Trailer).all()
+    return jsonify(Trailer=[t.serialize for t in trailers])
+
+@app.route('/users/JSON')
+def allUsersJSON():
+    users = session.query(Users).all()
+    return jsonify(Trailer=[u.serialize for u in users])
+
+@app.route('/genres/<int:genre_id>/trailers/JSON')
+def trailersInGenreJSON(genre_id):
+    currentGenre = session.query(Genre).filter_by(id=genre_id).one()
+    trailers = session.query(Trailer).filter_by(genre_id=genre_id).all()
+    return jsonify(Trailer=[t.serialize for t in trailers])
+
+@app.route('/genres/<int:genre_id>/trailers/<int:trailer_id>/JSON')
+def oneTrailerJSON(genre_id, trailer_id):
+    trailerToShow = session.query(Trailer).filter_by(
+        id=trailer_id, genre_id=genre_id).one()
+    return jsonify(Trailer=[trailerToShow.serialize])
 
 
 if __name__ == '__main__':
