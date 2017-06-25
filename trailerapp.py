@@ -412,6 +412,8 @@ def deleteTrailer(genre_id, trailer_id):
 # TODO: Route to Search Results Page /searchTrailers
 # TODO: Instead of routing to different page render results within search page
 
+argparser.add_argument("--a", help="Search term", default="")
+argparser.add_argument("--max-results", help="Max results", default=1)
 
 @app.route('/searchtrailers')
 def searchTrailers():
@@ -425,8 +427,6 @@ def searchTrailers():
 
 @app.route('/searchprocess', methods=['POST'])
 def searchProcess():
-    argparser.add_argument("--a", help="Search term", default="")
-    argparser.add_argument("--max-results", help="Max results", default=1)
     title = request.form['title']
     year = request.form['year']
     #API key for OMDB API:
@@ -444,7 +444,6 @@ def searchProcess():
     r = requests.get('http://www.omdbapi.com/?%s' %
                      (params))
     movieJSON = r.json()
-    posterURL = movieJSON['Poster']
 
     try:
       trailerID = trailersearch.youtube_search(args)
