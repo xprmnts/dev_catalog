@@ -418,34 +418,34 @@ def searchTrailers():
     if 'username' not in login_session:
         loggedIn = 'false'
         flash("You must login to search.")
-        return render_template('login.html')
+        return redirect(url_for('login'))
     else:
         loggedIn = 'true'
         return render_template('searchTrailers.html', loggedIn=loggedIn)
 
 @app.route('/searchprocess', methods=['POST'])
 def searchProcess():
+    argparser.add_argument("--a", help="Search term", default="")
+    argparser.add_argument("--max-results", help="Max results", default=1)
     title = request.form['title']
     year = request.form['year']
     #API key for OMDB API:
     apiKey = 'a7ab3c0e'#insert API Key
-    args = Namespace()
+
     if year:
         f = { 't' : title, 'y' : year, 'apiKey' : apiKey}
-        argparser.add_argument("--q", help="Search term", default="%s %s trailer" % (title, year))
+        args = argparser.parse_args(["--a", "%s %s trailer" % (title, year)])
+
     else:
         f = { 't' : title, 'apiKey' : apiKey}
-        argparser.add_argument("--q", help="Search term", default="%s trailer" % title)
+        args = argparser.parse_args(["--a", "%s trailer" % (title)])
+
     params = urllib.urlencode(f)
-    print ('http://www.omdbapi.com/?%s' %
-                     (params))
     r = requests.get('http://www.omdbapi.com/?%s' %
                      (params))
-    print("request %r" % r)
     movieJSON = r.json()
     posterURL = movieJSON['Poster']
-    argparser.add_argument("--max-results", help="Max results", default=1)
-    args = argparser.parse_args()
+
     try:
       trailerID = trailersearch.youtube_search(args)
     except urllib2.HTTPError as e:
@@ -453,8 +453,6 @@ def searchProcess():
 
     if title:
         movieJSON['Trailer'] = ('https://www.youtube.com/embed/%s' % trailerID)
-        print(type(movieJSON))
-        print(movieJSON)
         return jsonify(movieJSON)
 
     return jsonify({'error' : 'Unsuccesful Search!'})

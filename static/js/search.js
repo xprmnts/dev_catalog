@@ -21,7 +21,7 @@ $(document).ready(function() {
 				$('.movie-add-form').show();
  				$('.movie-poster').attr("src", data.Poster);
 				$('.embedded-trailer').attr("src", data.Trailer);
-				$("ul").empty();
+				$(".movie-data-list").empty();
 				var items = [];
         		items.push( "<li>Title: "+data.Title+"</li>" );
         		items.push( "<li>Genre: "+data.Genre+"</li>" );
@@ -38,16 +38,7 @@ $(document).ready(function() {
         		});
 				$('#errorAlert').hide();
 
-				movieDetails.Title = data.Title;
-				movieDetails.Genre = data.Genre;
-				movieDetails.Year = data.Year;
-				movieDetails.Rated = data.Rated;
-				movieDetails.Director = data.Director;
-				movieDetails.imdbRating = data.imdbRating;
-				movieDetails.Plot = data.Plot;
-				movieDetails.Poster = data.Poster;
-				movieDetails.Trailer = data.Trailer;
-				movieDetails.imdbID = data.imdbID;
+				movieDetails = data;
 			}
 
 		});
@@ -72,7 +63,5 @@ $(document).ready(function() {
 		});
 		event.preventDefault();
 	});
-
-
 
 });

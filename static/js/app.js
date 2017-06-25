@@ -4,7 +4,7 @@ and display the nav elements with animation
 */
 $('#hamburger').click(function(){
 	$('#hamburger').toggleClass('change');
-    $('li').toggleClass('responsive');form.js
+    $('li').toggleClass('responsive');
     $('nav').toggleClass('show');
 
 });
@@ -19,6 +19,7 @@ $(document).ready(function() {
 
     // run test on resize of the window
     $(window).resize(checkSize);
+
 });
 
 function checkSize(){
