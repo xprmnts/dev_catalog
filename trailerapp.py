@@ -504,6 +504,7 @@ def newSearchedTrailer():
         session.commit()
         currentGenre = session.query(Genre).filter_by(name=genre).one()
         genre_id = currentGenre.id
+        print(genre_id)
         aNewTrailer = Trailer(
             title=request.form['Title'],
             year=request.form['Year'],
@@ -514,7 +515,6 @@ def newSearchedTrailer():
             trailer=request.form['Trailer'],
             imdb_rating=request.form['imdbRating'],
             imdb_id=request.form['imdbID'],
-            boxoffice=request.form['Boxoffice'],
             users_id=login_session['users_id'],
             genre_id=genre_id)
         session.add(aNewTrailer)

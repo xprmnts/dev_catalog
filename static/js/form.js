@@ -18,7 +18,7 @@ $(document).ready(function() {
 			}
 			else {
 				$('#successAlert').show();
- 				//$('#trailerPoster').append(data);
+				$('.movie-add-form').show();
  				$('.movie-poster').attr("src", data.Poster);
 				$('.embedded-trailer').attr("src", data.Trailer);
 				$("ul").empty();
@@ -50,9 +50,6 @@ $(document).ready(function() {
 				movieDetails.imdbID = data.imdbID;
 			}
 
-
-
-
 		});
 		event.preventDefault();
 	});
@@ -69,7 +66,7 @@ $(document).ready(function() {
 				$('#addSuccess').hide();
 			}
 			else {
-				$('#addSuccess').append(data.error).show();
+				$('#addSuccess').append(data.success).show();
 				$('#addError').hide();
 			}
 		});
