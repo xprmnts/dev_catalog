@@ -17,6 +17,7 @@ import trailersearch
 from apiclient.discovery import build
 from apiclient.errors import HttpError
 from oauth2client.tools import argparser
+from argparse import Namespace
 
 # For Google Sign in API
 from oauth2client.client import flow_from_clientsecrets
@@ -60,18 +61,6 @@ def getUserID(email):
         print ("Returning User ID: %s" % user.id)
     except:
         return None
-
-@app.route('/')
-@app.route('/discover')
-def showLandingPage():
-    trailers = session.query(Trailer).all()
-    if 'username' not in login_session:
-        loggedIn = 'false'
-        return render_template('index.html', trailers=trailers, loggedIn=loggedIn, visclass="hide-links")
-    else:
-        loggedIn = 'true'
-        return render_template('index.html', trailers=trailers, loggedIn=loggedIn)
-
 
 # TODO: Route to Login Page
 
@@ -208,6 +197,20 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+# MAIN PAGE
+
+@app.route('/')
+@app.route('/discover')
+def showLandingPage():
+    trailers = session.query(Trailer).all()
+    if 'username' not in login_session:
+        loggedIn = 'false'
+        return render_template('index.html', trailers=trailers, loggedIn=loggedIn, visclass="hide-links")
+    else:
+        loggedIn = 'true'
+        return render_template('index.html', trailers=trailers, loggedIn=loggedIn)
+
+
 # Route to Genres Page /genres
 
 
@@ -275,6 +278,9 @@ def editGenre(genre_id):
 def deleteGenre(genre_id):
     currentGenre = session.query(Genre).filter_by(id=genre_id).one()
     if request.method == 'POST':
+        trailersToDelete = session.query(Trailer).filter_by(genre_id=genre_id).all()
+        for trailer in trailersToDelete:
+            session.delete(trailer)
         session.delete(currentGenre)
         session.commit()
         return redirect(url_for('showGenres'))
@@ -388,6 +394,9 @@ def deleteTrailer(genre_id, trailer_id):
         id=trailer_id, genre_id=genre_id).one()
     if request.method == 'POST':
         session.delete(trailerToDelete)
+        currentGenre = session.query(Genre).filter_by(id=genre_id).one()
+        currentGenre.num_trailers = currentGenre.num_trailers - 1
+        session.add(currentGenre)
         session.commit()
         return redirect(url_for('showTrailers', genre_id=genre_id))
     else:
@@ -406,7 +415,13 @@ def deleteTrailer(genre_id, trailer_id):
 
 @app.route('/searchtrailers')
 def searchTrailers():
-    return render_template('searchTrailers.html')
+    if 'username' not in login_session:
+        loggedIn = 'false'
+        flash("You must login to search.")
+        return render_template('login.html')
+    else:
+        loggedIn = 'true'
+        return render_template('searchTrailers.html', loggedIn=loggedIn)
 
 @app.route('/searchprocess', methods=['POST'])
 def searchProcess():
@@ -414,10 +429,13 @@ def searchProcess():
     year = request.form['year']
     #API key for OMDB API:
     apiKey = 'a7ab3c0e'#insert API Key
+    args = Namespace()
     if year:
         f = { 't' : title, 'y' : year, 'apiKey' : apiKey}
+        argparser.add_argument("--q", help="Search term", default="%s %s trailer" % (title, year))
     else:
         f = { 't' : title, 'apiKey' : apiKey}
+        argparser.add_argument("--q", help="Search term", default="%s trailer" % title)
     params = urllib.urlencode(f)
     print ('http://www.omdbapi.com/?%s' %
                      (params))
@@ -426,7 +444,6 @@ def searchProcess():
     print("request %r" % r)
     movieJSON = r.json()
     posterURL = movieJSON['Poster']
-    argparser.add_argument("--q", help="Search term", default="%s trailer" % title)
     argparser.add_argument("--max-results", help="Max results", default=1)
     args = argparser.parse_args()
     try:
@@ -448,6 +465,8 @@ def searchProcess():
 @app.route('/newsearchedtrailer', methods=['POST'])
 def newSearchedTrailer():
     genre = request.form['Genre']
+    if ',' in genre:
+        genre = genre[:genre.index(',')]
     print(genre)
 
     exists = session.query(Genre.id).filter_by(name=genre).scalar() is not None
@@ -467,12 +486,13 @@ def newSearchedTrailer():
             trailer=request.form['Trailer'],
             imdb_rating=request.form['imdbRating'],
             imdb_id=request.form['imdbID'],
+            users_id=login_session['users_id'],
             genre_id=genre_id)
         session.add(aNewTrailer)
         currentGenre.num_trailers = currentGenre.num_trailers + 1
         session.add(currentGenre)
         session.commit()
-        return jsonify({'success': 'movie added'})
+        return jsonify({'success' : 'Movie Added!'})
     else:
         aNewGenre = Genre(
             name=genre,
@@ -482,7 +502,8 @@ def newSearchedTrailer():
             users_id=login_session['users_id'])
         session.add(aNewGenre)
         session.commit()
-        genre_id = session.query(Genre.id).filter_by(name=genre).scalar()
+        currentGenre = session.query(Genre).filter_by(name=genre).one()
+        genre_id = currentGenre.id
         aNewTrailer = Trailer(
             title=request.form['Title'],
             year=request.form['Year'],
@@ -494,15 +515,17 @@ def newSearchedTrailer():
             imdb_rating=request.form['imdbRating'],
             imdb_id=request.form['imdbID'],
             boxoffice=request.form['Boxoffice'],
+            users_id=login_session['users_id'],
             genre_id=genre_id)
         session.add(aNewTrailer)
         currentGenre = session.query(Genre).filter_by(id=genre_id).one()
         currentGenre.num_trailers = currentGenre.num_trailers + 1
         session.add(currentGenre)
         session.commit()
-        return jsonify({'success': 'movie added'})
+        return jsonify({'success' : 'Movie Added!'})
 
-    return jsonify({'error': 'failed to add movie'})
+    return jsonify({'error' : 'Failed!'})
+
 
 
 # TODO: Route to API End Points /trailersJSON

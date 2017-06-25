@@ -1,3 +1,0 @@
-$(documen).ready(function()){
-
-});
