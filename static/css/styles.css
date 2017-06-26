@@ -459,13 +459,10 @@ button:focus {
 GOOGLE SIGNIN Login Page Styling
 */
 
-#___signin_0 {
-    margin: auto;
-    padding-top: 10px;
-}
-
 #signInButton {
-    margin-top: 80px;
+    margin: auto;
+    margin-top: 40px;
+    margin-left: 40px;
 }
 
 #result {
@@ -473,6 +470,7 @@ GOOGLE SIGNIN Login Page Styling
     margin-top: 40px;
     color: #222;
     margin-bottom: 40px;
+    margin-left: 40px;
 }
 
 /*

@@ -12,10 +12,10 @@
 					<li><a href="{{url_for('searchTrailers')}}" class="navlist-item">Search</a></li>
 					<li><a href="{{url_for('showLandingPage')}}" class="navlist-item">Discover</a></li>
 					<li><a href="{{url_for('showGenres')}}" class="navlist-item">Genres</a></li>
-					{% if loggedIn=='false' %}
-					<li><a href="{{url_for('login')}}" class="navlist-item">Login</a></li>
-					{% else %}
+					{% if loggedIn=='true' %}
 					<li><a href="{{url_for('gdisconnect')}}" class="navlist-item">Logout</a></li>
+					{% else %}
+					<li><a href="{{url_for('login')}}" class="navlist-item">Login</a></li>
 					{% endif %}
 				</ul>
 			</nav>
