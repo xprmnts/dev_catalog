@@ -59,9 +59,11 @@ If you followed everything right you should see something like this [Demo](http:
 
 The one thing that's a little suspect is step 11 - typically you'd run sudo a2ensite on the trailerApp.conf file in sites-available and a2dissite on the default apache file - but in all the test runs I did the steps above worked.
 
-### Some image URLs to use for CRUD operations when in need:
+### Some tips:
 - The Genre Page: use /images/genre_background.jpg for a generic background, or use an image url
 - The Trailer Page: Use the search feature to find a movie to add to the db ... or do it manually
+- Try Logan and 2017 in search page for title and year or wonder woman! 
+- There may be bugs if you dont clear cache on your browser ... use incognito mode just in case.
 
 # The following JSON Endpoints are allowed
 1) '/genres/JSON'
