@@ -54,9 +54,16 @@ A movie/trailer catalog application that allows simple CRUD operations on a libr
 26) ```vagrant reload```
 27) ```vagrant ssh```
 28) ```sudo service apache2 start```
-29) Open browser and access site from: localhost:8080
+29) Open browser and access site from: localhost:8000
 
 If you followed everything right you should see something like this [Demo](http://bskt.ca/)
+
+# The following JSON Endpoints are allowed
+1) '/genres/JSON'
+2) '/trailers/JSON'
+3) '/users/JSON'
+4) '/genres/<int:genre_id>/trailers/JSON'
+5) '/genres/<int:genre_id>/trailers/<int:trailer_id>/JSON'
 
 # Future TODO:
 1) I'd like to make use of configuration files to abstract out the API key's I used
