@@ -215,9 +215,9 @@ SELECT pg_catalog.setval('trailer_id_seq', 9, true);
 --
 
 COPY users (id, username, email) FROM stdin;
-1	Abhinay	abhinayk16@gmail.com
-2	Abhinay Reddy	akondamr@gmail.com
-3	Abhinay Kondamreddy	abhinaykondamreddy@gmail.com
+3	xprmnts3	test3@gmail.com
+2	xprmnts2	test2@gmail.com
+1	xprmnts1	test1@gmail.com
 \.
 
 
