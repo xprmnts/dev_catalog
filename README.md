@@ -30,8 +30,10 @@ A movie/trailer catalog application that allows simple CRUD operations on a libr
 
 ### Set up Database & Apache Server
 10) ```sudo cp trailerApp.conf /etc/apache2/sites-available```
-11) ```sudo cp trailerApp.conf /etc/apache2/sites-enabled```
+11) ```sudo a2dissite /etc/apache2/sites-available/000-default.conf```
+11) ```sudo a2ensite /etc/apache2/sites-available/trailerApp.conf```
 12) ```sudo cp apache2.conf /etc/apache2/```
+13) ```sudo service apache2 reload``` (if server isn't started you might have to run start instead of reload)
 13) ```sudo adduser catalog_owner```
 14) ```sudo su - postgres```
 15) ```createuser catalog_owner```
@@ -54,7 +56,7 @@ A movie/trailer catalog application that allows simple CRUD operations on a libr
 28) ```sudo service apache2 start```
 29) Open browser and access site from: localhost:8080
 
-If you followed everything right you should see something like this (link to demo):
+If you followed everything right you should see something like this [Demo](http://bskt.ca/)
 
 # Future TODO:
 1) I'd like to make use of configuration files to abstract out the API key's I used
