@@ -2,6 +2,10 @@
 # Catalog Project
 A movie/trailer catalog application that allows simple CRUD operations on a library of trailers.
 
+# REVIEWER UPDATE
+- The Google Sign in functionality will only work from the [demo](bskt.ca) site - so while the app might run on your local host not all the functionality will work
+- In order for the app to work on localhost you have to modify the client_secrets.json with your own and set up the google api for the sign in. Instructions below.
+
 ### Features:
 1) Google Sign in to restrict destructive CRUD operations to signed in users
 2) Movie Data Search (via OMDB API)
