@@ -66,8 +66,27 @@ The one thing that's a little suspect is step 11 - typically you'd run sudo a2en
 ### Some tips:
 - The Genre Page: use /images/genre_background.jpg for a generic background, or use an image url
 - The Trailer Page: Use the search feature to find a movie to add to the db ... or do it manually
-- Try Logan and 2017 in search page for title and year or wonder woman! 
+- Try Logan and 2017 in search page for title and year or wonder woman!
 - There may be bugs if you dont clear cache on your browser ... use incognito mode just in case.
+
+### Google Sign In:
+1) Go to your app's page in the Google APIs Console — https://console.developers.google.com/apis
+2) Create a project from the dropdown on the top nav
+3) Once the project is set up, select it in the dropdown on the top nav
+4) Choose Credentials from the menu on the left.
+5) Create Credentials > select OAuth Client ID.
+6) Choose Web Application in the following screen
+7) It will ask you to add origins and redirects:
+	- Origins:
+		- http://localhost:8000
+	- Redirects:
+		- http://localhost:8000/login
+		- http://localhost:8000/gconnect
+8) This will next require you to configure the consent screen
+9) Enter your email and the app name: "Trailr Catalog App"
+10) You will then be able to download the client ID and client secret - name it client_secrets.json
+11) Overrite the existing file with your own
+12) This should enable the google sign in functionality after you reload the server in the vagrant vm
 
 # The following JSON Endpoints are allowed
 1) '/genres/JSON'
