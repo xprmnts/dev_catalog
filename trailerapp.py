@@ -28,7 +28,6 @@ import json
 from flask import make_response
 import requests
 
-# Importing modules
 
 app = Flask(__name__)
 
@@ -266,6 +265,9 @@ def newGenre():
 @app.route('/genres/<int:genre_id>/editgenre', methods=['GET', 'POST'])
 def editGenre(genre_id):
     currentGenre = session.query(Genre).filter_by(id=genre_id).one()
+    if currentGenre.users_id != login_session['users_id']:
+        return jserror
+
     if request.method == 'POST':
         currentGenre.name = request.form['name']
         currentGenre.description = request.form['description']
@@ -280,8 +282,6 @@ def editGenre(genre_id):
                                    genre=currentGenre, loggedIn=loggedIn)
         else:
             loggedIn = 'true'
-            if currentGenre.users_id != login_session['users_id']:
-                return jserror
             return render_template('editGenre.html', genre_id=genre_id,
                                    genre=currentGenre, loggedIn=loggedIn)
 
@@ -292,6 +292,9 @@ def editGenre(genre_id):
 @app.route('/genres/<int:genre_id>/deletegenre', methods=['GET', 'POST'])
 def deleteGenre(genre_id):
     currentGenre = session.query(Genre).filter_by(id=genre_id).one()
+    if currentGenre.users_id != login_session['users_id']:
+        return jserror
+
     if request.method == 'POST':
         trailersToDelete = session.query(
             Trailer).filter_by(genre_id=genre_id).all()
@@ -307,8 +310,6 @@ def deleteGenre(genre_id):
                                    genre=currentGenre, loggedIn=loggedIn)
         else:
             loggedIn = 'true'
-            if currentGenre.users_id != login_session['users_id']:
-                return jserror
             return render_template('deleteGenre.html', genre_id=genre_id,
                                    genre=currentGenre, loggedIn=loggedIn)
 
@@ -387,6 +388,10 @@ def showTrailer(genre_id, trailer_id):
 def editTrailer(genre_id, trailer_id):
     trailerToEdit = session.query(Trailer).filter_by(
         id=trailer_id, genre_id=genre_id).one()
+
+    if trailerToEdit.users_id != login_session['users_id']:
+        return jserror
+
     if request.method == 'POST':
         trailerToEdit.title = request.form['title']
         trailerToEdit.year = request.form['year']
@@ -411,8 +416,6 @@ def editTrailer(genre_id, trailer_id):
                                    loggedIn=loggedIn)
         else:
             loggedIn = 'true'
-            if trailerToEdit.users_id != login_session['users_id']:
-                return jserror
             return render_template('editTrailer.html',
                                    genre_id=genre_id,
                                    trailer=trailerToEdit,
@@ -426,6 +429,10 @@ def editTrailer(genre_id, trailer_id):
 def deleteTrailer(genre_id, trailer_id):
     trailerToDelete = session.query(Trailer).filter_by(
         id=trailer_id, genre_id=genre_id).one()
+
+    if trailerToDelete.users_id != login_session['users_id']:
+        return jserror
+
     if request.method == 'POST':
         session.delete(trailerToDelete)
         currentGenre = session.query(Genre).filter_by(id=genre_id).one()
@@ -443,8 +450,6 @@ def deleteTrailer(genre_id, trailer_id):
                                    loggedIn=loggedIn)
         else:
             loggedIn = 'true'
-            if trailerToDelete.users_id != login_session['users_id']:
-                return jserror
             return render_template('deleteTrailer.html',
                                    genre_id=genre_id,
                                    trailer=trailerToDelete,
