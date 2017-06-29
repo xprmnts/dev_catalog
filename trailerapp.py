@@ -1,8 +1,9 @@
 # Trailr App
 # Author: XPRMNTS
 # Python Version: 2.7.6
-#------------------------------------------------------------------------------
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+# ------------------------------------------------------------------------------
+from flask import Flask, render_template
+from flask import request, redirect, url_for, flash, jsonify
 from flask import session as login_session
 import random
 import string
@@ -27,6 +28,8 @@ import json
 from flask import make_response
 import requests
 
+# Importing modules
+
 app = Flask(__name__)
 
 CLIENT_ID = json.loads(
@@ -41,24 +44,30 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 # Fake Data
 # Route to Discover Page /
+jserror = """<script>function myFunction(){alert('Unauthorized');}
+</script><body onload='myFunction()''>"""
+# Creating Users
 
-#Creating Users
+
 def createUser(login_session):
-    newUser = Users(username = login_session['username'], email = login_session['email'])
+    newUser = Users(username=login_session[
+                    'username'], email=login_session['email'])
     session.add(newUser)
     session.commit()
-    user = session.query(Users).filter_by(email = login_session['email']).one()
+    user = session.query(Users).filter_by(email=login_session['email']).one()
     return user.id
 
+
 def getUserInfo(users_id):
-    user = session.query(Users).filter_by(id = users_id).one()
+    user = session.query(Users).filter_by(id=users_id).one()
     return user
+
 
 def getUserID(email):
     try:
-        user = session.query(Users).filter_by(email = email).one()
+        user = session.query(Users).filter_by(email=email).one()
         return user.id
-        print ("Returning User ID: %s" % user.id)
+        print("Returning User ID: %s" % user.id)
     except:
         return None
 
@@ -70,7 +79,6 @@ def login():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
-    # return "The current session state is %s" % login_session['state']
     return render_template('login.html', STATE=state)
 
 
@@ -86,7 +94,8 @@ def gconnect():
 
     try:
         # Upgrade the authorization code into a credentials object
-        oauth_flow = flow_from_clientsecrets('/vagrant/client_secrets.json', scope='')
+        oauth_flow = flow_from_clientsecrets(
+            '/vagrant/client_secrets.json', scope='')
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
@@ -127,8 +136,8 @@ def gconnect():
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
+        response = make_response(
+            json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -147,9 +156,8 @@ def gconnect():
     login_session['username'] = data['name']
     login_session['email'] = data['email']
 
-
     users_id = getUserID(login_session['email'])
-    if users_id == None:
+    if users_id is None:
         print("User Id = NONE %s" % users_id)
         users_id = createUser(login_session)
     login_session['users_id'] = users_id
@@ -199,16 +207,20 @@ def gdisconnect():
 
 # MAIN PAGE
 
+
 @app.route('/')
 @app.route('/discover')
 def showLandingPage():
     trailers = session.query(Trailer).all()
     if 'username' not in login_session:
         loggedIn = 'false'
-        return render_template('index.html', trailers=trailers, loggedIn=loggedIn, visclass="hide-links")
+        return render_template('index.html',
+                               trailers=trailers, loggedIn=loggedIn,
+                               visclass="hide-links")
     else:
         loggedIn = 'true'
-        return render_template('index.html', trailers=trailers, loggedIn=loggedIn)
+        return render_template('index.html',
+                               trailers=trailers, loggedIn=loggedIn)
 
 
 # Route to Genres Page /genres
@@ -219,7 +231,8 @@ def showGenres():
     genres = session.query(Genre).all()
     if 'username' not in login_session:
         loggedIn = 'false'
-        return render_template('genres.html', genres=genres, loggedIn=loggedIn, visclass="hide-links")
+        return render_template('genres.html', genres=genres, loggedIn=loggedIn,
+                               visclass="hide-links")
     else:
         loggedIn = 'true'
         return render_template('genres.html', genres=genres, loggedIn=loggedIn)
@@ -263,12 +276,14 @@ def editGenre(genre_id):
     else:
         if 'username' not in login_session:
             loggedIn = 'false'
-            return render_template('editGenre.html', genre_id=genre_id, genre=currentGenre, loggedIn=loggedIn)
+            return render_template('editGenre.html', genre_id=genre_id,
+                                   genre=currentGenre, loggedIn=loggedIn)
         else:
             loggedIn = 'true'
             if currentGenre.users_id != login_session['users_id']:
-                return "<script>function myFunction(){alert('Unauthorized');}</script><body onload='myFunction()''>"
-            return render_template('editGenre.html', genre_id=genre_id, genre=currentGenre, loggedIn=loggedIn)
+                return jserror
+            return render_template('editGenre.html', genre_id=genre_id,
+                                   genre=currentGenre, loggedIn=loggedIn)
 
 # Route to Delete selected Genre Page /genres/#/deleteGenre (DELTE Method)
 # TODO: Generate a popup instead of sending to new page
@@ -278,7 +293,8 @@ def editGenre(genre_id):
 def deleteGenre(genre_id):
     currentGenre = session.query(Genre).filter_by(id=genre_id).one()
     if request.method == 'POST':
-        trailersToDelete = session.query(Trailer).filter_by(genre_id=genre_id).all()
+        trailersToDelete = session.query(
+            Trailer).filter_by(genre_id=genre_id).all()
         for trailer in trailersToDelete:
             session.delete(trailer)
         session.delete(currentGenre)
@@ -287,12 +303,14 @@ def deleteGenre(genre_id):
     else:
         if 'username' not in login_session:
             loggedIn = 'false'
-            return render_template('deleteGenre.html', genre_id=genre_id, genre=currentGenre, loggedIn=loggedIn)
+            return render_template('deleteGenre.html', genre_id=genre_id,
+                                   genre=currentGenre, loggedIn=loggedIn)
         else:
             loggedIn = 'true'
             if currentGenre.users_id != login_session['users_id']:
-                return "<script>function myFunction(){alert('Unauthorized');}</script><body onload='myFunction()''>"
-            return render_template('deleteGenre.html', genre_id=genre_id, genre=currentGenre, loggedIn=loggedIn)
+                return jserror
+            return render_template('deleteGenre.html', genre_id=genre_id,
+                                   genre=currentGenre, loggedIn=loggedIn)
 
 
 # Route to View Trailers by Genere Page /genres/#/Trailers/
@@ -304,14 +322,17 @@ def showTrailers(genre_id):
     trailers = session.query(Trailer).filter_by(genre_id=genre_id).all()
     if 'username' not in login_session:
         loggedIn = 'false'
-        return render_template('trailers.html', trailers=trailers, genre=currentGenre, loggedIn=loggedIn)
+        return render_template('trailers.html', trailers=trailers,
+                               genre=currentGenre, loggedIn=loggedIn)
     else:
         loggedIn = 'true'
-        return render_template('trailers.html', trailers=trailers, genre=currentGenre, loggedIn=loggedIn)
+        return render_template('trailers.html', trailers=trailers,
+                               genre=currentGenre, loggedIn=loggedIn)
 # TODO: Route to Add Trailer /library/#/Trailers/addTrailer
 
 
-@app.route('/genres/<int:genre_id>/trailers/newtrailer', methods=['GET', 'POST'])
+@app.route('/genres/<int:genre_id>/trailers/newtrailer',
+           methods=['GET', 'POST'])
 def newTrailer(genre_id):
     currentGenre = session.query(Genre).filter_by(id=genre_id).one()
     if request.method == 'POST':
@@ -335,10 +356,12 @@ def newTrailer(genre_id):
     else:
         if 'username' not in login_session:
             loggedIn = 'false'
-            return render_template('newTrailer.html', genre=currentGenre, loggedIn=loggedIn)
+            return render_template('newTrailer.html',
+                                   genre=currentGenre, loggedIn=loggedIn)
         else:
             loggedIn = 'true'
-            return render_template('newTrailer.html', genre=currentGenre, loggedIn=loggedIn)
+            return render_template('newTrailer.html',
+                                   genre=currentGenre, loggedIn=loggedIn)
 
 # TODO: Route to Show a Trailer /library/#/Trailers/#/editTrailer
 
@@ -349,15 +372,18 @@ def showTrailer(genre_id, trailer_id):
         id=trailer_id, genre_id=genre_id).one()
     if 'username' not in login_session:
         loggedIn = 'false'
-        return render_template('showTrailer.html', trailer=trailerToShow, loggedIn=loggedIn)
+        return render_template('showTrailer.html',
+                               trailer=trailerToShow, loggedIn=loggedIn)
     else:
         loggedIn = 'true'
-        return render_template('showTrailer.html', trailer=trailerToShow, loggedIn=loggedIn)
+        return render_template('showTrailer.html',
+                               trailer=trailerToShow, loggedIn=loggedIn)
 
 # TODO: Route to Edit a Trailer /library/#/Trailers/#/editTrailer
 
 
-@app.route('/genres/<int:genre_id>/trailers/<int:trailer_id>/edittrailer', methods=['GET', 'POST'])
+@app.route('/genres/<int:genre_id>/trailers/<int:trailer_id>/edittrailer',
+           methods=['GET', 'POST'])
 def editTrailer(genre_id, trailer_id):
     trailerToEdit = session.query(Trailer).filter_by(
         id=trailer_id, genre_id=genre_id).one()
@@ -374,21 +400,29 @@ def editTrailer(genre_id, trailer_id):
         trailerToEdit.boxoffice = request.form['boxoffice']
         session.add(trailerToEdit)
         session.commit()
-        return redirect(url_for('showTrailers', genre_id=trailerToEdit.genre_id))
+        return redirect(url_for('showTrailers',
+                                genre_id=trailerToEdit.genre_id))
     else:
         if 'username' not in login_session:
             loggedIn = 'false'
-            return render_template('editTrailer.html', genre_id=genre_id, trailer=trailerToEdit, loggedIn=loggedIn)
+            return render_template('editTrailer.html',
+                                   genre_id=genre_id,
+                                   trailer=trailerToEdit,
+                                   loggedIn=loggedIn)
         else:
             loggedIn = 'true'
             if trailerToEdit.users_id != login_session['users_id']:
-                return "<script>function myFunction(){alert('Unauthorized');}</script><body onload='myFunction()''>"
-            return render_template('editTrailer.html', genre_id=genre_id, trailer=trailerToEdit, loggedIn=loggedIn)
+                return jserror
+            return render_template('editTrailer.html',
+                                   genre_id=genre_id,
+                                   trailer=trailerToEdit,
+                                   loggedIn=loggedIn)
 
 # TODO: Route to Delete a Trailer /library/#/Content/#/deleteTrailer
 
 
-@app.route('/genres/<int:genre_id>/trailers/<int:trailer_id>/deletetrailer', methods=['GET', 'POST'])
+@app.route('/genres/<int:genre_id>/trailers/<int:trailer_id>/deletetrailer',
+           methods=['GET', 'POST'])
 def deleteTrailer(genre_id, trailer_id):
     trailerToDelete = session.query(Trailer).filter_by(
         id=trailer_id, genre_id=genre_id).one()
@@ -398,22 +432,30 @@ def deleteTrailer(genre_id, trailer_id):
         currentGenre.num_trailers = currentGenre.num_trailers - 1
         session.add(currentGenre)
         session.commit()
-        return redirect(url_for('showTrailers', genre_id=genre_id))
+        return redirect(url_for('showTrailers',
+                                genre_id=genre_id))
     else:
         if 'username' not in login_session:
             loggedIn = 'false'
-            return render_template('deleteTrailer.html', genre_id=genre_id, trailer=trailerToDelete, loggedIn=loggedIn)
+            return render_template('deleteTrailer.html',
+                                   genre_id=genre_id,
+                                   trailer=trailerToDelete,
+                                   loggedIn=loggedIn)
         else:
             loggedIn = 'true'
             if trailerToDelete.users_id != login_session['users_id']:
-                return "<script>function myFunction(){alert('Unauthorized');}</script><body onload='myFunction()''>"
-            return render_template('deleteTrailer.html', genre_id=genre_id, trailer=trailerToDelete, loggedIn=loggedIn)
+                return jserror
+            return render_template('deleteTrailer.html',
+                                   genre_id=genre_id,
+                                   trailer=trailerToDelete,
+                                   loggedIn=loggedIn)
 
 # TODO: Route to Search Results Page /searchTrailers
 # TODO: Instead of routing to different page render results within search page
 
 argparser.add_argument("--a", help="Search term", default="")
 argparser.add_argument("--max-results", help="Max results", default=1)
+
 
 @app.route('/searchtrailers')
 def searchTrailers():
@@ -423,21 +465,23 @@ def searchTrailers():
         return redirect(url_for('login'))
     else:
         loggedIn = 'true'
-        return render_template('searchTrailers.html', loggedIn=loggedIn)
+        return render_template('searchTrailers.html',
+                               loggedIn=loggedIn)
+
 
 @app.route('/searchprocess', methods=['POST'])
 def searchProcess():
     title = request.form['title']
     year = request.form['year']
-    #API key for OMDB API:
-    apiKey = 'a7ab3c0e'#insert API Key
+    # API key for OMDB API:
+    apiKey = 'a7ab3c0e'  # insert API Key
 
     if year:
-        f = { 't' : title, 'y' : year, 'apiKey' : apiKey}
+        f = {'t': title, 'y': year, 'apiKey': apiKey}
         args = argparser.parse_args(["--a", "%s %s trailer" % (title, year)])
 
     else:
-        f = { 't' : title, 'apiKey' : apiKey}
+        f = {'t': title, 'apiKey': apiKey}
         args = argparser.parse_args(["--a", "%s trailer" % (title)])
 
     params = urllib.urlencode(f)
@@ -446,15 +490,15 @@ def searchProcess():
     movieJSON = r.json()
 
     try:
-      trailerID = trailersearch.youtube_search(args)
+        trailerID = trailersearch.youtube_search(args)
     except urllib2.HTTPError as e:
-      return ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
+        return ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
 
     if title:
         movieJSON['Trailer'] = ('https://www.youtube.com/embed/%s' % trailerID)
         return jsonify(movieJSON)
 
-    return jsonify({'error' : 'Unsuccesful Search!'})
+    return jsonify({'error': 'Unsuccesful Search!'})
 
 # Accept incoming search request for a movie and return movie data
 
@@ -489,7 +533,7 @@ def newSearchedTrailer():
         currentGenre.num_trailers = currentGenre.num_trailers + 1
         session.add(currentGenre)
         session.commit()
-        return jsonify({'success' : 'Movie Added!'})
+        return jsonify({'success': 'Movie Added!'})
     else:
         aNewGenre = Genre(
             name=genre,
@@ -519,10 +563,9 @@ def newSearchedTrailer():
         currentGenre.num_trailers = currentGenre.num_trailers + 1
         session.add(currentGenre)
         session.commit()
-        return jsonify({'success' : 'Movie Added!'})
+        return jsonify({'success': 'Movie Added!'})
 
-    return jsonify({'error' : 'Failed!'})
-
+    return jsonify({'error': 'Failed!'})
 
 
 # TODO: Route to API End Points /trailersJSON
@@ -532,21 +575,25 @@ def allGenresJSON():
     genres = session.query(Genre).all()
     return jsonify(Genre=[g.serialize for g in genres])
 
+
 @app.route('/trailers/JSON')
 def allTrailersJSON():
     trailers = session.query(Trailer).all()
     return jsonify(Trailer=[t.serialize for t in trailers])
+
 
 @app.route('/users/JSON')
 def allUsersJSON():
     users = session.query(Users).all()
     return jsonify(Trailer=[u.serialize for u in users])
 
+
 @app.route('/genres/<int:genre_id>/trailers/JSON')
 def trailersInGenreJSON(genre_id):
     currentGenre = session.query(Genre).filter_by(id=genre_id).one()
     trailers = session.query(Trailer).filter_by(genre_id=genre_id).all()
     return jsonify(Trailer=[t.serialize for t in trailers])
+
 
 @app.route('/genres/<int:genre_id>/trailers/<int:trailer_id>/JSON')
 def oneTrailerJSON(genre_id, trailer_id):
