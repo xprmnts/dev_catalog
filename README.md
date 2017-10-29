@@ -3,7 +3,7 @@
 A movie/trailer catalog application that allows simple CRUD operations on a library of trailers.
 
 # REVIEWER UPDATE
-- The Google Sign in functionality *may* not work from your local host - it does work from the [demo](bskt.ca) site - so while the app might run on your local host not all the functionality will work
+- The Google Sign in functionality *may* not work from your local host - it does work from the [demo](xprmnts.ca) site - so while the app might run on your local host not all the functionality will work
 - In order for the app to work on localhost you have to modify the client_secrets.json with your own and set up the google api for the sign in. Instructions below.
 
 ### Features:
